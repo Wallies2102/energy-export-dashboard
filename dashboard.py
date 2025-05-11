@@ -11,7 +11,7 @@ df['hour'] = df['time'].dt.hour
 df['day'] = df['time'].dt.dayofweek
 df['month'] = df['time'].dt.month
 df['date'] = df['time'].dt.date
-df['export_per_interval'] = df['eport_kwh'].diff().fillna(0)
+df['export_per_interval'] = df['export_kwh'].diff().fillna(0)
 
 # Sidebar filters
 st.sidebar.header("Filter Options")
