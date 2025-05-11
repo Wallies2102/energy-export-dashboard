@@ -7,9 +7,15 @@ import plotly.express as px
 # Load data
 df = pd.read_csv("LGZ58952193-ReadLoadProfile1.1.csv")
 df['time'] = pd.to_datetime(df['time'])
+df['export_per_interval'] = df['export_kwh'].diff().fillna(0)
 df['hour'] = df['time'].dt.hour
 df['day'] = df['time'].dt.dayofweek
 df['month'] = df['time'].dt.month
+
+# Grouped data
+daily_export = df.groupby('date')['export_per_interval'].sum()
+hourly_export = df.groupby('hour')['export_per_interval'].mean()
+
 
 # Sidebar filters
 st.sidebar.header("Filter Options")
