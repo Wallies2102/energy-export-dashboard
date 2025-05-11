@@ -7,20 +7,15 @@ import plotly.express as px
 # Load data
 df = pd.read_csv("LGZ58952193-ReadLoadProfile1.1.csv")
 df['time'] = pd.to_datetime(df['time'])
-df['date'] = df['time'].dt.date
-df['export_per_interval'] = df['export_kwh'].diff().fillna(0)
 df['hour'] = df['time'].dt.hour
 df['day'] = df['time'].dt.dayofweek
 df['month'] = df['time'].dt.month
-
-# Grouped data
-daily_export = df.groupby('date')['export_per_interval'].sum()
-hourly_export = df.groupby('hour')['export_per_interval'].mean()
-
+df['date'] = df['time'].dt.date
+df['export_per_interval'] = df['eport_kwh'].diff().fillna(0)
 
 # Sidebar filters
 st.sidebar.header("Filter Options")
-selected_plot = st.sidebar.selectbox("Select plot type", ["Heatmap", "Box Plot", "Cumulative Export", "Hourly Export"])
+selected_plot = st.sidebar.selectbox("Select plot type", ["Heatmap", "Box Plot", "Cumulative Export", "Hourly Export", "Daily Export"])
 start_date = st.sidebar.date_input("Start Date", df['time'].min().date())
 end_date = st.sidebar.date_input("End Date", df['time'].max().date())
 
@@ -40,7 +35,7 @@ if selected_plot == "Heatmap":
         ax.set_ylabel("Day of Week (0=Monday)")
         st.pyplot(fig)
     else:
-        st.warning("Column 'export_kwh' not found in the dataset.")
+        st.warning("Column 'eport_kwh' not found in the dataset.")
 
 # Box Plot
 elif selected_plot == "Box Plot":
@@ -68,3 +63,15 @@ elif selected_plot == "Hourly Export":
     ax2.set_title("Hourly Export Pattern")
     ax2.grid(True)
     st.pyplot(fig2)
+
+# Daily Export trend
+elif selected_plot == "Daily Export":
+    daily_export = df_filtered.groupby('date')['export_per_interval'].sum()
+    st.subheader("Total Daily Energy Export")
+    fig3, ax3 = plt.subplots(figsize=(10, 4))
+    ax3.plot(daily_export.index, daily_export.values, marker='o')
+    ax3.set_xlabel("Date")
+    ax3.set_ylabel("Total Export (kWh)")
+    ax3.set_title("Daily Energy Export Trend")
+    ax3.grid(True)
+    st.pyplot(fig3)
