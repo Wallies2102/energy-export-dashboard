@@ -54,7 +54,7 @@ elif selected_plot == "Cumulative Export":
 
 # Hourly trend
 elif selected_plot == "Hourly Export":
-    hourly_export = df_filtered.groupby('hour')['export_kwh'].mean()
+    hourly_export = df_filtered.groupby('hour')['export_per_interval'].mean()
     st.subheader("Average Energy Export by Hour of Day")
     fig2, ax2 = plt.subplots(figsize=(10, 4))
     ax2.bar(hourly_export.index, hourly_export.values, color='darkorange')
