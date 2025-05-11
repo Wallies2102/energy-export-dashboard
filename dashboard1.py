@@ -11,15 +11,7 @@ df['hour'] = df['time'].dt.hour
 df['day'] = df['time'].dt.dayofweek
 df['month'] = df['time'].dt.month
 df['date'] = df['time'].dt.date
-df['export_kwh'] = df['export_kwh']
 df['export_per_interval'] = df['export_kwh'].diff().fillna(0)
-
-# Preprocessing: Remove intervals with no change in export for > 24 hours (48 intervals assuming 30-min data)
-df['constant_group'] = (df['export_kwh'] != df['export_kwh'].shift()).cumsum()
-group_sizes = df.groupby('constant_group').size()
-long_constant_groups = group_sizes[group_sizes > 48].index
-df = df[~df['constant_group'].isin(long_constant_groups)].copy()
-df.drop(columns='constant_group', inplace=True)
 
 # Sidebar filters
 st.sidebar.header("Filter Options")
@@ -35,7 +27,7 @@ st.title("Energy Export Dashboard")
 
 # Heatmap
 if selected_plot == "Heatmap":
-    if 'eport_kwh' in df_filtered.columns:
+    if 'export_kwh' in df_filtered.columns:
         pivot = df_filtered.pivot_table(index='day', columns='hour', values='export_kwh', aggfunc='mean')
         fig, ax = plt.subplots()
         sns.heatmap(pivot, ax=ax, cmap='YlGnBu')
