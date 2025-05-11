@@ -35,7 +35,7 @@ st.title("Energy Export Dashboard")
 
 # Heatmap
 if selected_plot == "Heatmap":
-    if 'eport_kwh' in df_filtered.columns:
+    if 'export_kwh' in df_filtered.columns:
         pivot = df_filtered.pivot_table(index='day', columns='hour', values='export_kwh', aggfunc='mean')
         fig, ax = plt.subplots()
         sns.heatmap(pivot, ax=ax, cmap='YlGnBu')
