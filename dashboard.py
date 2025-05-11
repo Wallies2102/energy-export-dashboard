@@ -33,17 +33,19 @@ df_filtered = df.loc[mask].copy()
 
 st.title("Energy Export Dashboard")
 
-# Heatmap
+# Heatmap (using export_per_interval instead of cumulative)
 if selected_plot == "Heatmap":
-    if 'export_kwh' in df_filtered.columns:
+    if 'export_per_interval' in df_filtered.columns:
         pivot = df_filtered.pivot_table(index='day', columns='hour', values='export_per_interval', aggfunc='mean')
         fig, ax = plt.subplots()
         sns.heatmap(pivot, ax=ax, cmap='YlGnBu')
         ax.set_xlabel("Hour of Day")
         ax.set_ylabel("Day of Week (0=Monday)")
+        ax.set_title("Average Export per Interval by Day and Hour")
         st.pyplot(fig)
     else:
-        st.warning("Column 'export_kwh' not found in the dataset.")
+        st.warning("Column 'export_per_interval' not found in the dataset.")
+
 
 # Box Plot
 elif selected_plot == "Box Plot":
