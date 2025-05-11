@@ -25,7 +25,7 @@ st.title("Energy Export Dashboard")
 
 # Heatmap
 if selected_plot == "Heatmap":
-    pivot = df_filtered.pivot_table(index='day', columns='hour', values='eport_kwh', aggfunc='mean')
+    pivot = df_filtered.pivot_table(index='day', columns='hour', values='export_kwh', aggfunc='mean')
     fig, ax = plt.subplots()
     sns.heatmap(pivot, ax=ax, cmap='YlGnBu')
     ax.set_xlabel("Hour of Day")
@@ -34,9 +34,9 @@ if selected_plot == "Heatmap":
 
 # Box Plot
 elif selected_plot == "Box Plot":
-    fig = px.box(df_filtered, x='month', y='eport_kwh', points='all',
+    fig = px.box(df_filtered, x='month', y='export_kwh', points='all',
                  title="Monthly Export Distribution",
-                 labels={'month': 'Month', 'eport_kwh': 'Export (kWh)'})
+                 labels={'month': 'Month', 'export_kwh': 'Export (kWh)'})
     st.plotly_chart(fig)
 
 # Cumulative Plot
