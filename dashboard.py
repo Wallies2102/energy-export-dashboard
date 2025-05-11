@@ -13,7 +13,7 @@ df['month'] = df['time'].dt.month
 
 # Sidebar filters
 st.sidebar.header("Filter Options")
-selected_plot = st.sidebar.selectbox("Select plot type", ["Heatmap", "Box Plot", "Cumulative Export"])
+selected_plot = st.sidebar.selectbox("Select plot type", ["Heatmap", "Box Plot", "Cumulative Export", "Hourly Export"])
 start_date = st.sidebar.date_input("Start Date", df['time'].min().date())
 end_date = st.sidebar.date_input("End Date", df['time'].max().date())
 
@@ -25,24 +25,39 @@ st.title("Energy Export Dashboard")
 
 # Heatmap
 if selected_plot == "Heatmap":
-    pivot = df_filtered.pivot_table(index='day', columns='hour', values='export_kwh', aggfunc='mean')
-    fig, ax = plt.subplots()
-    sns.heatmap(pivot, ax=ax, cmap='YlGnBu')
-    ax.set_xlabel("Hour of Day")
-    ax.set_ylabel("Day of Week (0=Monday)")
-    st.pyplot(fig)
+    if 'eport_kwh' in df_filtered.columns:
+        pivot = df_filtered.pivot_table(index='day', columns='hour', values='export_kwh', aggfunc='mean')
+        fig, ax = plt.subplots()
+        sns.heatmap(pivot, ax=ax, cmap='YlGnBu')
+        ax.set_xlabel("Hour of Day")
+        ax.set_ylabel("Day of Week (0=Monday)")
+        st.pyplot(fig)
+    else:
+        st.warning("Column 'export_kwh' not found in the dataset.")
 
 # Box Plot
 elif selected_plot == "Box Plot":
-    fig = px.box(df_filtered, x='month', y='export_kwh', points='all',
+    fig = px.box(df_filtered, x='month', y='eport_kwh', points='all',
                  title="Monthly Export Distribution",
                  labels={'month': 'Month', 'export_kwh': 'Export (kWh)'})
     st.plotly_chart(fig)
 
 # Cumulative Plot
 elif selected_plot == "Cumulative Export":
-    df_filtered['cumulative_export_kwh'] = df_filtered['eport_kwh'].cumsum()
+    df_filtered['cumulative_export_kwh'] = df_filtered['export_kwh'].cumsum()
     fig = px.line(df_filtered, x='time', y='cumulative_export_kwh',
                   title='Cumulative Energy Export (kWh)',
                   labels={'cumulative_export_kwh': 'Energy Export (kWh)'})
     st.plotly_chart(fig)
+
+# Hourly trend
+elif selected_plot == "Hourly Export":
+    hourly_export = df_filtered.groupby('hour')['export_kwh'].mean()
+    st.subheader("Average Energy Export by Hour of Day")
+    fig2, ax2 = plt.subplots(figsize=(10, 4))
+    ax2.bar(hourly_export.index, hourly_export.values, color='darkorange')
+    ax2.set_xlabel("Hour")
+    ax2.set_ylabel("Average Export (kWh)")
+    ax2.set_title("Hourly Export Pattern")
+    ax2.grid(True)
+    st.pyplot(fig2)
