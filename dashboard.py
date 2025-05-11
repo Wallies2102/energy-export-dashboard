@@ -21,6 +21,13 @@ long_constant_groups = group_sizes[group_sizes > 48].index
 df = df[~df['constant_group'].isin(long_constant_groups)].copy()
 df.drop(columns='constant_group', inplace=True)
 
+
+# Step: Remove months with suspiciously low average export (e.g., < 50% of median)
+monthly_avg = df.groupby(df['time'].dt.month)['export_per_interval'].mean()
+threshold = monthly_avg.median() * 0.5
+valid_months = monthly_avg[monthly_avg > threshold].index
+df = df[df['month'].isin(valid_months)].copy()
+
 # Sidebar filters
 st.sidebar.header("Filter Options")
 selected_plot = st.sidebar.selectbox("Select plot type", ["Heatmap", "Box Plot", "Cumulative Export", "Hourly Export", "Daily Export"])
@@ -49,7 +56,7 @@ if selected_plot == "Heatmap":
 elif selected_plot == "Box Plot":
     fig = px.box(df_filtered, x='month', y='export_kwh', points='all',
                  title="Monthly Export Distribution",
-                 labels={'month': 'Month', 'export_kwh': 'Export (kWh)'})
+                 labels={'month': 'Month', 'eport_kwh': 'Export (kWh)'})
     st.plotly_chart(fig)
 
 # Cumulative Plot

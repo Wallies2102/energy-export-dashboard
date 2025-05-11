@@ -11,7 +11,22 @@ df['hour'] = df['time'].dt.hour
 df['day'] = df['time'].dt.dayofweek
 df['month'] = df['time'].dt.month
 df['date'] = df['time'].dt.date
+df['export_kwh'] = df['export_kwh']
 df['export_per_interval'] = df['export_kwh'].diff().fillna(0)
+
+# Preprocessing: Remove intervals with no change in export for > 24 hours (48 intervals assuming 30-min data)
+df['constant_group'] = (df['export_kwh'] != df['export_kwh'].shift()).cumsum()
+group_sizes = df.groupby('constant_group').size()
+long_constant_groups = group_sizes[group_sizes > 48].index
+df = df[~df['constant_group'].isin(long_constant_groups)].copy()
+df.drop(columns='constant_group', inplace=True)
+
+
+# Step: Remove months with suspiciously low average export (e.g., < 50% of median)
+monthly_avg = df.groupby(df['time'].dt.month)['export_per_interval'].mean()
+threshold = monthly_avg.median() * 0.5
+valid_months = monthly_avg[monthly_avg > threshold].index
+df = df[df['month'].isin(valid_months)].copy()
 
 # Sidebar filters
 st.sidebar.header("Filter Options")
@@ -27,7 +42,7 @@ st.title("Energy Export Dashboard")
 
 # Heatmap
 if selected_plot == "Heatmap":
-    if 'export_kwh' in df_filtered.columns:
+    if 'eport_kwh' in df_filtered.columns:
         pivot = df_filtered.pivot_table(index='day', columns='hour', values='export_kwh', aggfunc='mean')
         fig, ax = plt.subplots()
         sns.heatmap(pivot, ax=ax, cmap='YlGnBu')
@@ -41,7 +56,7 @@ if selected_plot == "Heatmap":
 elif selected_plot == "Box Plot":
     fig = px.box(df_filtered, x='month', y='export_kwh', points='all',
                  title="Monthly Export Distribution",
-                 labels={'month': 'Month', 'export_kwh': 'Export (kWh)'})
+                 labels={'month': 'Month', 'eport_kwh': 'Export (kWh)'})
     st.plotly_chart(fig)
 
 # Cumulative Plot
